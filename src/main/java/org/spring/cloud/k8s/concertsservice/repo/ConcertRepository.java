@@ -9,8 +9,8 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface ConcertRepository extends ReactiveMongoRepository<Concert, String> {
-    Flux<Concert> findByAuthor(String author);
+    Flux<Concert> findByName(String name);
 
-    Mono<Concert> findByBandandDeleteIsFalse(String title);
+    Mono<Concert> findByBand(String band);
 
 }

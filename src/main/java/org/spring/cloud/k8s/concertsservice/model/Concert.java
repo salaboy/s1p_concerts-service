@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
-@Document(collection = "blog")
+@Document(collection = "concert")
 public class Concert extends BaseEntity {
 
     @TextIndexed
@@ -17,6 +17,7 @@ public class Concert extends BaseEntity {
     private String band;
 
     private Date concertDate;
+
 
     public Concert() {
     }
@@ -50,4 +51,5 @@ public class Concert extends BaseEntity {
     public void setConcertDate(Date concertDate) {
         this.concertDate = concertDate;
     }
+
 }
