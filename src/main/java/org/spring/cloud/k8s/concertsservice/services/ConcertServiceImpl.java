@@ -1,17 +1,29 @@
 package org.spring.cloud.k8s.concertsservice.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.spring.cloud.k8s.concertsservice.controllers.ConcertController;
 import org.spring.cloud.k8s.concertsservice.model.Concert;
 import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 public class ConcertServiceImpl implements ConcertService{
 
+    private static final Logger log = LoggerFactory.getLogger(ConcertServiceImpl.class);
+
     @Autowired
     private ConcertRepository concertRepository;
+
+    @Autowired
+    private DiscoveryClient discoveryClient;
 
     @Override
     public Mono<Concert> createConcert(Concert concert) {
@@ -20,6 +32,12 @@ public class ConcertServiceImpl implements ConcertService{
 
     @Override
     public Flux<Concert> findAll() {
+
+        List<String> services = discoveryClient.getServices();
+        for(String s : services){
+            log.info("Discovered Service: " + s);
+        }
+
         return concertRepository.findAll();
     }
 
