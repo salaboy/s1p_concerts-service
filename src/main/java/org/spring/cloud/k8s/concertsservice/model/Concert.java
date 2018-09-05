@@ -18,6 +18,8 @@ public class Concert extends BaseEntity {
 
     private Date concertDate;
 
+    private String availableTickets = "N/A";
+
 
     public Concert() {
     }
@@ -52,4 +54,11 @@ public class Concert extends BaseEntity {
         this.concertDate = concertDate;
     }
 
+    public String getAvailableTickets() {
+        return availableTickets;
+    }
+
+    public void setAvailableTickets(String availableTickets) {
+        this.availableTickets = availableTickets;
+    }
 }

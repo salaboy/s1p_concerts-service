@@ -32,12 +32,15 @@ public class ConcertServiceImpl implements ConcertService{
 
     @Override
     public Flux<Concert> findAll() {
-
+        // For each concert:
+        //  - look for a ticket service with the concert name
+        //  -- If found get the amount of available tickets
+        //  -- decorate the concert with the available tickets
+        //  -
         List<String> services = discoveryClient.getServices();
         for(String s : services){
             log.info("Discovered Service: " + s);
         }
-
         return concertRepository.findAll();
     }
 
@@ -53,8 +56,15 @@ public class ConcertServiceImpl implements ConcertService{
 
     @Override
     public Mono<Concert> findOne(String id) {
+
         return concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
+
+//        List<String> services = discoveryClient.getServices();
+//        for(String s : services){
+//            log.info("Discovered Service: " + s);
+//        }
+
     }
 
     @Override
