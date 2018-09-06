@@ -15,10 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableDiscoveryClient
 public class ConcertsServiceApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(ConcertsServiceApplication.class, args);
-    }
-
     @Configuration
     public static class SecurityPermitAllConfig extends WebSecurityConfigurerAdapter {
         @Override
@@ -27,4 +23,10 @@ public class ConcertsServiceApplication {
                     .and().csrf().disable();
         }
     }
+
+    public static void main(String[] args) {
+        SpringApplication.run(ConcertsServiceApplication.class, args);
+    }
+
+
 }
