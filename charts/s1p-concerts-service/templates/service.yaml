@@ -8,6 +8,7 @@ metadata:
 {{- end }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    s1p: "true"
     spring-boot: "true"
 {{- if .Values.service.annotations }}
   annotations:
