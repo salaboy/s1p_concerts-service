@@ -7,9 +7,11 @@ import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
 import java.util.List;
 
 @Service
@@ -55,13 +57,30 @@ public class ConcertServiceImpl implements ConcertService {
     @Override
     public Mono<Concert> findOne(String id) {
 
-        return concertRepository.findById(id).
+        Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
+        List<String> services = discoveryClient.getServices();
+        for (String s : services) {
+            log.info("Discovered Service: " + s);
 
-//        List<String> services = discoveryClient.getServices();
-//        for(String s : services){
-//            log.info("Discovered Service: " + s);
-//        }
+            WebClient webClient = WebClient.builder().baseUrl(s).build();
+
+            WebClient.RequestHeadersSpec<?> request = webClient.get().uri(URI.create("/tickets"));
+
+            Integer availableTickets = request
+                    .retrieve()
+                    .bodyToMono(Integer.class)
+                    .block();
+
+            log.info("Tickets Available for concert! : " + availableTickets);
+            concertMono.blockOptional().get().setAvailableTickets(availableTickets.toString());
+
+        }
+
+
+        return concertMono;
+
+
 
     }
 
