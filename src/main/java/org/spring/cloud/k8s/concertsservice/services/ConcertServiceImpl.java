@@ -63,9 +63,9 @@ public class ConcertServiceImpl implements ConcertService {
         for (String s : services) {
             log.info("Discovered Service: " + s);
 
-            WebClient webClient = WebClient.builder().baseUrl(s).build();
+            WebClient webClient = WebClient.builder().baseUrl("http://"+s).build();
 
-            WebClient.RequestHeadersSpec<?> request = webClient.get().uri(URI.create("/tickets"));
+            WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
 
             Integer availableTickets = request
                     .retrieve()
