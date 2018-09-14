@@ -73,8 +73,9 @@ public class ConcertServiceImpl implements ConcertService {
                     .block();
 
             log.info("Tickets Available for concert! : " + availableTickets);
-            concertMono.blockOptional().get().setAvailableTickets(availableTickets.toString());
+            concertMono.block().setAvailableTickets(availableTickets.toString());
 
+            log.info("Tickers in Mono : " +concertMono.block().getAvailableTickets());
         }
 
 
