@@ -82,9 +82,9 @@ public class ConcertServiceImpl implements ConcertService {
                     return tuple.getT1();
                 });
 
-        log.info("Tickers in Mono : " + decoratedConcert.block().getAvailableTickets());
+        log.info("Tickets in Mono : " + decoratedConcert.block().getAvailableTickets());
 
-        return concertMono;
+        return decoratedConcert;
 
 
     }
