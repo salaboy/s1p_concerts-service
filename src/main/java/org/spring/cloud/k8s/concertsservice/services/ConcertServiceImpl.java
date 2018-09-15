@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.List;
 
 @Service
@@ -60,27 +59,32 @@ public class ConcertServiceImpl implements ConcertService {
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
         List<String> services = discoveryClient.getServices();
-        for (String s : services) {
-            log.info("Discovered Service: " + s);
 
-            WebClient webClient = WebClient.builder().baseUrl("http://"+s).build();
-
-            WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
-
-            Integer availableTickets = request
-                    .retrieve()
-                    .bodyToMono(Integer.class)
-                    .block();
-
-            log.info("Tickets Available for concert! : " + availableTickets);
-            concertMono.block().setAvailableTickets(availableTickets.toString());
-
-            log.info("Tickers in Mono : " +concertMono.block().getAvailableTickets());
+        if (services.size() > 1) {
+            throw new IllegalStateException("There are more than one Ticket Service for this event: " + services);
         }
 
+        String ticketsServiceName = services.get(0);
+
+        log.info("Tickets Service Discovered : " + ticketsServiceName);
+
+        WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceName).build();
+
+        WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
+
+        Mono<Integer> availableTickets = request
+                .retrieve()
+                .bodyToMono(Integer.class);
+
+        Mono<Concert> decoratedConcert = concertMono.zipWith(availableTickets).map(
+                tuple -> {
+                    tuple.getT1().setAvailableTickets(tuple.getT2().toString());
+                    return tuple.getT1();
+                });
+
+        log.info("Tickers in Mono : " + decoratedConcert.block().getAvailableTickets());
 
         return concertMono;
-
 
 
     }
