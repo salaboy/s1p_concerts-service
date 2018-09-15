@@ -47,7 +47,7 @@ public class ConcertController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Boolean> delete(@PathVariable String id) {
+    public Mono<Void> delete(@PathVariable String id) {
         log.debug("delete Concert with id : {}", id);
         return concertService.delete(id);
     }
