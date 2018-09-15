@@ -69,7 +69,6 @@ public class ConcertServiceImpl implements ConcertService {
             List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
             ticketsServiceForConcert = instances.stream()
                     .filter(instance -> concertMono.block().getCode().equals(instance.getMetadata().get("code"))).findFirst();
-
         }
 
         if(ticketsServiceForConcert.isPresent()) {
