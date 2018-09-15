@@ -137,9 +137,9 @@
 	</build>
 	<repositories>
 		<repository>
-			<id>jenkinsx</id>
-			<name>Jenkins X Releases</name>
-			<url>http://nexus.jx.35.195.224.137.nip.io/repository/maven-group/</url>
+			<id>spring-snapshosts</id>
+			<name>Spring Snapshotss</name>
+			<url>https://repo.spring.io/snapshot/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>

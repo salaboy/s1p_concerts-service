@@ -6,12 +6,14 @@ import org.spring.cloud.k8s.concertsservice.model.Concert;
 import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConcertServiceImpl implements ConcertService {
@@ -55,38 +57,50 @@ public class ConcertServiceImpl implements ConcertService {
 
     @Override
     public Mono<Concert> findOne(String id) {
-
+        // Get the concert from the local Repo
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
+        // List Available Services (already filtered by type)
         List<String> services = discoveryClient.getServices();
 
-        if (services.size() > 1) {
-            throw new IllegalStateException("There are more than one Ticket Service for this event: " + services);
+        Optional<ServiceInstance> ticketsServiceForConcert = Optional.empty();
+        // Get service instance to check for extra metadata to bind concert code with tickets services
+        for (String ticketsService : services) {
+            List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
+            ticketsServiceForConcert = instances.stream()
+                    .filter(instance -> concertMono.block().getCode().equals(instance.getMetadata().get("code"))).findFirst();
+
         }
 
-        String ticketsServiceName = services.get(0);
+        if(ticketsServiceForConcert.isPresent()) {
 
-        log.info("Tickets Service Discovered : " + ticketsServiceName);
+            log.info("Tickets Service Discovered : " + ticketsServiceForConcert.get().getServiceId());
 
-        WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceName).build();
+            WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.get().getServiceId()).build();
 
-        WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
+            WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
 
-        Mono<Integer> availableTickets = request
-                .retrieve()
-                .bodyToMono(Integer.class);
+            Mono<Integer> availableTickets = request
+                    .retrieve()
+                    .bodyToMono(Integer.class);
 
-        Mono<Concert> decoratedConcert = concertMono.zipWith(availableTickets).map(
-                tuple -> {
-                    tuple.getT1().setAvailableTickets(tuple.getT2().toString());
-                    return tuple.getT1();
-                });
-
-        log.info("Tickets in Mono : " + decoratedConcert.block().getAvailableTickets());
-
-        return decoratedConcert;
+            log.info("Tickets : " + availableTickets.block());
+            // Decorate concert with available Tickets
+            Mono<Concert> decoratedConcert = concertMono.zipWith(availableTickets).map(
+                    tuple -> {
+                        tuple.getT1().setAvailableTickets(tuple.getT2().toString());
+                        return tuple.getT1();
+                    });
 
 
+            return decoratedConcert;
+        }else{
+            log.info("No Tickets Service found for Concert Code: " + concertMono.block().getCode());
+        }
+
+
+
+        return concertMono;
     }
 
     @Override

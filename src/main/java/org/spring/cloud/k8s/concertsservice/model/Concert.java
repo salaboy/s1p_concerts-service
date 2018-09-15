@@ -16,6 +16,8 @@ public class Concert extends BaseEntity {
     @Indexed
     private String band;
 
+    private String code;
+
     private Date concertDate;
 
     private String availableTickets = "N/A";
@@ -29,6 +31,7 @@ public class Concert extends BaseEntity {
         this.band = band;
         this.concertDate = concertDate;
     }
+
 
     public String getName() {
         return name;
@@ -52,6 +55,14 @@ public class Concert extends BaseEntity {
 
     public void setConcertDate(Date concertDate) {
         this.concertDate = concertDate;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getAvailableTickets() {
