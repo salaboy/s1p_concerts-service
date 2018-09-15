@@ -17,6 +17,6 @@ public interface ConcertService {
 
     Flux<Concert> findByName(String name);
 
-    Mono<Boolean> delete(String id);
+    Mono<Void> delete(String id);
 
 }

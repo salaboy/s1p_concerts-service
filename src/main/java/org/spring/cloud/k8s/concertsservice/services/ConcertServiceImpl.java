@@ -109,9 +109,7 @@ public class ConcertServiceImpl implements ConcertService {
     }
 
     @Override
-    public Mono<Boolean> delete(String id) {
-        return findOne(id).doOnSuccess(concert -> {
-            concertRepository.delete(concert).subscribe();
-        }).flatMap(blog -> Mono.just(Boolean.TRUE));
+    public Mono<Void> delete(String id) {
+        return concertRepository.deleteById(id);
     }
 }
