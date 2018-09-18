@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RefreshScope
 public class ConcertServiceImpl implements ConcertService {
 
     private static final Logger log = LoggerFactory.getLogger(ConcertServiceImpl.class);
