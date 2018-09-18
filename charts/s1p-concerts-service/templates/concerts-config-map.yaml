@@ -4,4 +4,4 @@ metadata:
   name: {{ .Values.service.name }}
 data:
   application.properties: |-
-    s1p.decorate.concerts=false
+    s1p.decorate=false

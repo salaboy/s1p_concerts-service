@@ -6,10 +6,8 @@ import org.spring.cloud.k8s.concertsservice.config.ConcertsConfiguration;
 import org.spring.cloud.k8s.concertsservice.model.Concert;
 import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -45,8 +43,9 @@ public class ConcertServiceImpl implements ConcertService {
         //  -- If found get the amount of available tickets
         //  -- decorate the concert with the available tickets
         //  -
-        log.info("Decorate all Services enabled?: " + config.getDecorateConcerts());
-        if(config.getDecorateConcerts()) {
+        log.info("is bean null: "+ config);
+        log.info("Decorate all Services enabled?: " + config.getDecorate());
+        if (config.getDecorate()) {
             log.info("Decorate all Services enabled !: ");
             List<String> services = discoveryClient.getServices();
             for (String s : services) {
@@ -82,7 +81,7 @@ public class ConcertServiceImpl implements ConcertService {
                     .filter(instance -> concertMono.block().getCode().equals(instance.getMetadata().get("code"))).findFirst();
         }
 
-        if(ticketsServiceForConcert.isPresent()) {
+        if (ticketsServiceForConcert.isPresent()) {
 
             log.info("Tickets Service Discovered : " + ticketsServiceForConcert.get().getServiceId());
 
@@ -104,10 +103,9 @@ public class ConcertServiceImpl implements ConcertService {
 
 
             return decoratedConcert;
-        }else{
+        } else {
             log.info("No Tickets Service found for Concert Code: " + concertMono.block().getCode());
         }
-
 
 
         return concertMono;
