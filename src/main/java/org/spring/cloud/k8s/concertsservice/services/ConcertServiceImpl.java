@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.spring.cloud.k8s.concertsservice.model.Concert;
 import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class ConcertServiceImpl implements ConcertService {
     @Autowired
     private DiscoveryClient discoveryClient;
 
+    @Value("${s1p.decorate.concerts:false}")
+    private Boolean decorateConcerts ;
+
     @Override
     public Mono<Concert> createConcert(Concert concert) {
         return concertRepository.insert(concert);
@@ -33,16 +37,20 @@ public class ConcertServiceImpl implements ConcertService {
 
     @Override
     public Flux<Concert> findAll() {
+        Flux<Concert> allConcerts = concertRepository.findAll();
         // For each concert:
         //  - look for a ticket service with the concert name
         //  -- If found get the amount of available tickets
         //  -- decorate the concert with the available tickets
         //  -
-        List<String> services = discoveryClient.getServices();
-        for (String s : services) {
-            log.info("Discovered Service: " + s);
+        if(decorateConcerts) {
+            log.info("Decorate all Services enabled !: ");
+            List<String> services = discoveryClient.getServices();
+            for (String s : services) {
+                log.info("Discovered Service: " + s);
+            }
         }
-        return concertRepository.findAll();
+        return allConcerts;
     }
 
     @Override

@@ -23,7 +23,6 @@ public class ConcertController {
     @GetMapping
     public Flux<Concert> findAll() {
         log.debug("findAll Concert");
-        // WebClient call
         return concertService.findAll();
     }
 
