@@ -7,14 +7,14 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "s1p")
 public class ConcertsConfiguration {
 
-    private Boolean decorate;
+    private String decorate;
 
 
-    public Boolean getDecorate() {
+    public String getDecorate() {
         return decorate;
     }
 
-    public void setDecorate(Boolean decorate) {
+    public void setDecorate(String decorate) {
         this.decorate = decorate;
     }
 }

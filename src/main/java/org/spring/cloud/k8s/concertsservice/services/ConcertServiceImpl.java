@@ -54,7 +54,8 @@ public class ConcertServiceImpl implements ConcertService {
         //  -
         log.info("is bean null: "+ config);
         log.info("Decorate all Services enabled?: " + config.getDecorate());
-        if (config.getDecorate()) {
+        Boolean decorate = new Boolean(config.getDecorate());
+        if (decorate) {
             log.info("Decorate all Services enabled !: ");
             List<String> services = discoveryClient.getServices();
             for (String s : services) {
