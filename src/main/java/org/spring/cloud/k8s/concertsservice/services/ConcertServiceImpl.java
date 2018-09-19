@@ -8,6 +8,8 @@ import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RefreshScope
 public class ConcertServiceImpl implements ConcertService {
 
     private static final Logger log = LoggerFactory.getLogger(ConcertServiceImpl.class);
@@ -33,6 +36,12 @@ public class ConcertServiceImpl implements ConcertService {
     @Override
     public Mono<Concert> createConcert(Concert concert) {
         return concertRepository.insert(concert);
+    }
+
+    @Scheduled(fixedDelay = 5000)
+    public void hello() {
+        System.out.println("The first message is: " + config.getDecorate());
+
     }
 
     @Override
