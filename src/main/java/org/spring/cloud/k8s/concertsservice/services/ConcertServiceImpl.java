@@ -38,11 +38,6 @@ public class ConcertServiceImpl implements ConcertService {
         return concertRepository.insert(concert);
     }
 
-    @Scheduled(fixedDelay = 5000)
-    public void hello() {
-        System.out.println("The first message is: " + config.getDecorate());
-
-    }
 
     @Override
     public Flux<Concert> findAll() {

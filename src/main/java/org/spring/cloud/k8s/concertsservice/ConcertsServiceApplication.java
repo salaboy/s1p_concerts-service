@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @SpringBootApplication
 @EnableMongoRepositories
 @EnableDiscoveryClient
-@EnableScheduling
 public class ConcertsServiceApplication {
 
     @Configuration
