@@ -66,6 +66,7 @@ public class ConcertServiceImpl implements ConcertService {
             findConcert.setConcertDate(concert.getConcertDate());
             findConcert.setName(concert.getName());
             findConcert.setBand(concert.getBand());
+            findConcert.setCode(concert.getCode());
             concertRepository.save(findConcert).subscribe();
         });
     }

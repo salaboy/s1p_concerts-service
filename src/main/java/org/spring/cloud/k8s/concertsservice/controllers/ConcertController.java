@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 
 
 @RestController
-@RequestMapping("/api/v1/concert")
+@RequestMapping("/concerts")
 @RefreshScope
 public class ConcertController {
 
