@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RefreshScope
@@ -54,9 +55,10 @@ public class ConcertServiceImpl implements ConcertService {
         log.info("Decorate all Services enabled?: " + config.getDecorate());
         Boolean decorate = new Boolean(config.getDecorate());
         if (decorate) {
-            allConcerts.toStream()
-                    .forEach(concert -> findMatchingTicketsService(concert)
+            List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
+            concerts.forEach(concert -> findMatchingTicketsService(concert)
                             .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
+            return Flux.fromIterable(concerts);
         }
         return allConcerts;
     }
