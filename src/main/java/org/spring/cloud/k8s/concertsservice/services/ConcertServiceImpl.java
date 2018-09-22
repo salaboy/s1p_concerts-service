@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -37,7 +36,7 @@ public class ConcertServiceImpl implements ConcertService {
 
     @Override
     public Mono<Concert> createConcert(Concert concert) {
-        if(concert.getConcertDate() == null){
+        if (concert.getConcertDate() == null) {
             concert.setConcertDate(new Date());
         }
         return concertRepository.insert(concert);
@@ -57,7 +56,7 @@ public class ConcertServiceImpl implements ConcertService {
         if (decorate) {
             List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
             concerts.forEach(concert -> findMatchingTicketsService(concert)
-                            .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
+                    .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
             return Flux.fromIterable(concerts);
         }
         return allConcerts;
@@ -82,7 +81,7 @@ public class ConcertServiceImpl implements ConcertService {
 
         Optional<ServiceInstance> ticketsServiceForConcert = findMatchingTicketsService(concertMono.block());
 
-        ticketsServiceForConcert.ifPresent(serviceInstance ->  decorateConcertWithTicketsInfo(concertMono.block(), serviceInstance));
+        ticketsServiceForConcert.ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concertMono.block(), serviceInstance));
 
         return concertMono;
     }
@@ -112,7 +111,10 @@ public class ConcertServiceImpl implements ConcertService {
                 .retrieve()
                 .bodyToMono(Integer.class);
 
-        concert.setAvailableTickets(availableTickets.block().toString());
+        String remainingTickets = availableTickets.block().toString();
+        log.info("Available Tickets for " + concert.getName() + ": " + +remainingTickets);
+
+        concert.setAvailableTickets(remainingTickets);
 
         return Mono.just(concert);
 //
