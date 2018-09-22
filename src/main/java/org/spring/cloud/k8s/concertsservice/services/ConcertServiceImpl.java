@@ -15,6 +15,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +36,9 @@ public class ConcertServiceImpl implements ConcertService {
 
     @Override
     public Mono<Concert> createConcert(Concert concert) {
+        if(concert.getConcertDate() == null){
+            concert.setConcertDate(new Date());
+        }
         return concertRepository.insert(concert);
     }
 
@@ -47,15 +51,12 @@ public class ConcertServiceImpl implements ConcertService {
         //  -- If found get the amount of available tickets
         //  -- decorate the concert with the available tickets
         //  -
-        log.info("is bean null: "+ config);
         log.info("Decorate all Services enabled?: " + config.getDecorate());
         Boolean decorate = new Boolean(config.getDecorate());
         if (decorate) {
-            log.info("Decorate all Services enabled !: ");
-            List<String> services = discoveryClient.getServices();
-            for (String s : services) {
-                log.info("Discovered Service: " + s);
-            }
+            allConcerts.toStream()
+                    .forEach(concert -> findMatchingTicketsService(concert)
+                            .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
         }
         return allConcerts;
     }
@@ -76,45 +77,49 @@ public class ConcertServiceImpl implements ConcertService {
         // Get the concert from the local Repo
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
-        // List Available Services (already filtered by type)
+
+        Optional<ServiceInstance> ticketsServiceForConcert = findMatchingTicketsService(concertMono.block());
+
+        ticketsServiceForConcert.ifPresent(serviceInstance ->  decorateConcertWithTicketsInfo(concertMono.block(), serviceInstance));
+
+        return concertMono;
+    }
+
+    private Optional<ServiceInstance> findMatchingTicketsService(Concert concert) {
         List<String> services = discoveryClient.getServices();
 
         Optional<ServiceInstance> ticketsServiceForConcert = Optional.empty();
+
         // Get service instance to check for extra metadata to bind concert code with tickets services
         for (String ticketsService : services) {
             List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
             ticketsServiceForConcert = instances.stream()
-                    .filter(instance -> concertMono.block().getCode().equals(instance.getMetadata().get("code"))).findFirst();
+                    .filter(instance -> concert.getCode().equals(instance.getMetadata().get("code"))).findFirst();
         }
+        return ticketsServiceForConcert;
+    }
 
-        if (ticketsServiceForConcert.isPresent()) {
+    private Mono<Concert> decorateConcertWithTicketsInfo(Concert concert, ServiceInstance ticketsServiceForConcert) {
+        log.info("Decorating Concert with Service : " + ticketsServiceForConcert.getServiceId());
 
-            log.info("Tickets Service Discovered : " + ticketsServiceForConcert.get().getServiceId());
+        WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.getServiceId()).build();
 
-            WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.get().getServiceId()).build();
+        WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
 
-            WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
+        Mono<Integer> availableTickets = request
+                .retrieve()
+                .bodyToMono(Integer.class);
 
-            Mono<Integer> availableTickets = request
-                    .retrieve()
-                    .bodyToMono(Integer.class);
+        concert.setAvailableTickets(availableTickets.block().toString());
 
-            log.info("Tickets : " + availableTickets.block());
-            // Decorate concert with available Tickets
-            Mono<Concert> decoratedConcert = concertMono.zipWith(availableTickets).map(
-                    tuple -> {
-                        tuple.getT1().setAvailableTickets(tuple.getT2().toString());
-                        return tuple.getT1();
-                    });
-
-
-            return decoratedConcert;
-        } else {
-            log.info("No Tickets Service found for Concert Code: " + concertMono.block().getCode());
-        }
-
-
-        return concertMono;
+        return Mono.just(concert);
+//
+//        // Decorate concert with available Tickets
+//        return concertMono.zipWith(availableTickets).map(
+//                tuple -> {
+//                    tuple.getT1().setAvailableTickets(tuple.getT2().toString());
+//                    return tuple.getT1();
+//                });
     }
 
     @Override
