@@ -79,11 +79,12 @@ public class ConcertServiceImpl implements ConcertService {
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
 
-        Optional<ServiceInstance> ticketsServiceForConcert = findMatchingTicketsService(concertMono.block());
+        Concert concert = concertMono.block();
+        Optional<ServiceInstance> ticketsServiceForConcert = findMatchingTicketsService(concert);
 
-        ticketsServiceForConcert.ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concertMono.block(), serviceInstance));
+        ticketsServiceForConcert.ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance));
 
-        return concertMono;
+        return Mono.just(concert);
     }
 
     private Optional<ServiceInstance> findMatchingTicketsService(Concert concert) {
@@ -100,7 +101,7 @@ public class ConcertServiceImpl implements ConcertService {
         return ticketsServiceForConcert;
     }
 
-    private Mono<Concert> decorateConcertWithTicketsInfo(Concert concert, ServiceInstance ticketsServiceForConcert) {
+    private Concert decorateConcertWithTicketsInfo(Concert concert, ServiceInstance ticketsServiceForConcert) {
         log.info("Decorating Concert with Service : " + ticketsServiceForConcert.getServiceId());
 
         WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.getServiceId()).build();
@@ -116,14 +117,8 @@ public class ConcertServiceImpl implements ConcertService {
 
         concert.setAvailableTickets(remainingTickets);
 
-        return Mono.just(concert);
-//
-//        // Decorate concert with available Tickets
-//        return concertMono.zipWith(availableTickets).map(
-//                tuple -> {
-//                    tuple.getT1().setAvailableTickets(tuple.getT2().toString());
-//                    return tuple.getT1();
-//                });
+        return concert;
+
     }
 
     @Override
