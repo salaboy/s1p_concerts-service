@@ -112,7 +112,7 @@ public class ConcertServiceImpl implements ConcertService {
                 .bodyToMono(Integer.class);
 
         String remainingTickets = availableTickets.block().toString();
-        log.info("Available Tickets for " + concert.getName() + ": " + +remainingTickets);
+        log.info("Available Tickets for " + concert.getName() + ": " + remainingTickets);
 
         concert.setAvailableTickets(remainingTickets);
 
