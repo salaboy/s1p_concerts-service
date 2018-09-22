@@ -55,6 +55,7 @@ public class ConcertServiceImpl implements ConcertService {
         Boolean decorate = new Boolean(config.getDecorate());
         if (decorate) {
             List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
+
             concerts.forEach(concert -> findMatchingTicketsService(concert)
                     .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
             return Flux.fromIterable(concerts);
@@ -93,10 +94,12 @@ public class ConcertServiceImpl implements ConcertService {
         Optional<ServiceInstance> ticketsServiceForConcert = Optional.empty();
 
         // Get service instance to check for extra metadata to bind concert code with tickets services
+        log.info("Finding Matching Tickets service for code: " + concert.getCode());
         for (String ticketsService : services) {
+            log.info("> Checking discovered service: " +ticketsService);
             List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
             ticketsServiceForConcert = instances.stream()
-                    .filter(instance -> concert.getCode().equals(instance.getMetadata().get("code"))).findFirst();
+                    .filter(instance -> concert.getCode().equals(instance.getMetadata().get("code"))).findAny();
         }
         return ticketsServiceForConcert;
     }
