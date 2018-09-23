@@ -101,8 +101,12 @@ public class ConcertServiceImpl implements ConcertService {
             ticketsServiceForConcert = instances.stream()
                     .filter(instance -> {
                         log.info("> Comparing ServiceInstance Code: "+ instance.getMetadata().get("code") + " vs Concert Code: " + concert.getCode());
+                        log.info("> \t Result: "+ concert.getCode().equals(instance.getMetadata().get("code")));
                         return concert.getCode().equals(instance.getMetadata().get("code"));
                     }).findAny();
+            if(ticketsServiceForConcert.isPresent()){
+                return ticketsServiceForConcert;
+            }
         }
         return ticketsServiceForConcert;
     }
