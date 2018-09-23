@@ -46,16 +46,16 @@ public class ConcertServiceImpl implements ConcertService {
     @Override
     public Flux<Concert> findAll() {
         Flux<Concert> allConcerts = concertRepository.findAll();
-        // For each concert:
-        //  - look for a ticket service with the concert name
-        //  -- If found get the amount of available tickets
-        //  -- decorate the concert with the available tickets
-        //  -
+
         log.info("Decorate all Services enabled?: " + config.getDecorate());
         Boolean decorate = new Boolean(config.getDecorate());
         if (decorate) {
-            List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
+            // For each concert:
+            //  - look for a ticket service with the concert name
+            //  -- If found, get the amount of available tickets
+            //  -- decorate the concert with the available tickets
 
+            List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
             concerts.forEach(concert -> findMatchingTicketsService(concert)
                     .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
             return Flux.fromIterable(concerts);
@@ -94,14 +94,11 @@ public class ConcertServiceImpl implements ConcertService {
         Optional<ServiceInstance> ticketsServiceForConcert = Optional.empty();
 
         // Get service instance to check for extra metadata to bind concert code with tickets services
-        log.info("Finding Matching Tickets service for code: " + concert.getCode());
+        log.info("> Finding Matching Tickets service for code: " + concert.getCode());
         for (String ticketsService : services) {
-            log.info("> Checking discovered service: " +ticketsService);
             List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
             ticketsServiceForConcert = instances.stream()
                     .filter(instance -> {
-                        log.info("> Comparing ServiceInstance Code: "+ instance.getMetadata().get("code") + " vs Concert Code: " + concert.getCode());
-                        log.info("> \t Result: "+ concert.getCode().equals(instance.getMetadata().get("code")));
                         return concert.getCode().equals(instance.getMetadata().get("code"));
                     }).findAny();
             if(ticketsServiceForConcert.isPresent()){
@@ -112,7 +109,7 @@ public class ConcertServiceImpl implements ConcertService {
     }
 
     private Concert decorateConcertWithTicketsInfo(Concert concert, ServiceInstance ticketsServiceForConcert) {
-        log.info("Decorating Concert with Service : " + ticketsServiceForConcert.getServiceId());
+        log.info("> Decorating Concert with Service : " + ticketsServiceForConcert.getServiceId());
 
         WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.getServiceId()).build();
 
@@ -123,7 +120,7 @@ public class ConcertServiceImpl implements ConcertService {
                 .bodyToMono(Integer.class);
 
         String remainingTickets = availableTickets.block().toString();
-        log.info("Available Tickets for " + concert.getName() + ": " + remainingTickets);
+        log.info("> Available Tickets for " + concert.getName() + ": " + remainingTickets);
 
         concert.setAvailableTickets(remainingTickets);
 
