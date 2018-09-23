@@ -99,7 +99,10 @@ public class ConcertServiceImpl implements ConcertService {
             log.info("> Checking discovered service: " +ticketsService);
             List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
             ticketsServiceForConcert = instances.stream()
-                    .filter(instance -> concert.getCode().equals(instance.getMetadata().get("code"))).findAny();
+                    .filter(instance -> {
+                        log.info("> Comparing ServiceInstance Code: "+ instance.getMetadata().get("code") + " vs Concert Code: " + concert.getCode());
+                        return concert.getCode().equals(instance.getMetadata().get("code"));
+                    }).findAny();
         }
         return ticketsServiceForConcert;
     }
