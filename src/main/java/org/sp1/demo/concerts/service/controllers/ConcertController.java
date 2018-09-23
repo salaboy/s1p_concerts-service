@@ -1,9 +1,9 @@
-package org.spring.cloud.k8s.concertsservice.controllers;
+package org.sp1.demo.concerts.service.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spring.cloud.k8s.concertsservice.model.Concert;
-import org.spring.cloud.k8s.concertsservice.services.ConcertService;
+import org.sp1.demo.concerts.service.model.Concert;
+import org.sp1.demo.concerts.service.services.ConcertService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;

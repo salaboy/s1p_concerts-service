@@ -1,7 +1,7 @@
-package org.spring.cloud.k8s.concertsservice.repo;
+package org.sp1.demo.concerts.service.repo;
 
 
-import org.spring.cloud.k8s.concertsservice.model.Concert;
+import org.sp1.demo.concerts.service.model.Concert;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;

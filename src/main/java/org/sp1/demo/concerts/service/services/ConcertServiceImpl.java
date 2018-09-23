@@ -1,10 +1,10 @@
-package org.spring.cloud.k8s.concertsservice.services;
+package org.sp1.demo.concerts.service.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spring.cloud.k8s.concertsservice.config.ConcertsConfiguration;
-import org.spring.cloud.k8s.concertsservice.model.Concert;
-import org.spring.cloud.k8s.concertsservice.repo.ConcertRepository;
+import org.sp1.demo.concerts.service.config.ConcertsConfiguration;
+import org.sp1.demo.concerts.service.model.Concert;
+import org.sp1.demo.concerts.service.repo.ConcertRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;

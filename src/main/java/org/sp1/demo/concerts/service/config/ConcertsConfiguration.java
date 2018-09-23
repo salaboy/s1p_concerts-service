@@ -1,4 +1,4 @@
-package org.spring.cloud.k8s.concertsservice.config;
+package org.sp1.demo.concerts.service.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

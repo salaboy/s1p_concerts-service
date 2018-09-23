@@ -1,4 +1,4 @@
-package org.spring.cloud.k8s.concertsservice.model;
+package org.sp1.demo.concerts.service.model;
 
 
 import org.springframework.data.annotation.Id;

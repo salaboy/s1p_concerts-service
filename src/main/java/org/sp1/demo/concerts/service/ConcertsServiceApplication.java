@@ -1,4 +1,4 @@
-package org.spring.cloud.k8s.concertsservice;
+package org.sp1.demo.concerts.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

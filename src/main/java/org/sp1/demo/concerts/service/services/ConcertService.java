@@ -1,6 +1,6 @@
-package org.spring.cloud.k8s.concertsservice.services;
+package org.sp1.demo.concerts.service.services;
 
-import org.spring.cloud.k8s.concertsservice.model.Concert;
+import org.sp1.demo.concerts.service.model.Concert;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
