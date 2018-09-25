@@ -54,7 +54,6 @@ public class ConcertServiceImpl implements ConcertService {
             //  - look for a ticket service with the concert name
             //  -- If found, get the amount of available tickets
             //  -- decorate the concert with the available tickets
-
             List<Concert> concerts = allConcerts.toStream().collect(Collectors.toList());
             concerts.forEach(concert -> findMatchingTicketsService(concert)
                     .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
@@ -79,33 +78,29 @@ public class ConcertServiceImpl implements ConcertService {
         // Get the concert from the local Repo
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
+        return concertMono.doOnSuccess(concert -> findMatchingTicketsService(concert)
+                .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance));
 
-        Concert concert = concertMono.block();
-        Optional<ServiceInstance> ticketsServiceForConcert = findMatchingTicketsService(concert);
-
-        ticketsServiceForConcert.ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance));
-
-        return Mono.just(concert);
     }
 
     private Optional<ServiceInstance> findMatchingTicketsService(Concert concert) {
         List<String> services = discoveryClient.getServices();
-
-        Optional<ServiceInstance> ticketsServiceForConcert = Optional.empty();
-
         // Get service instance to check for extra metadata to bind concert code with tickets services
         log.info("> Finding Matching Tickets service for code: " + concert.getCode());
-        for (String ticketsService : services) {
-            List<ServiceInstance> instances = discoveryClient.getInstances(ticketsService);
-            ticketsServiceForConcert = instances.stream()
-                    .filter(instance -> {
-                        return concert.getCode().equals(instance.getMetadata().get("code"));
-                    }).findAny();
-            if(ticketsServiceForConcert.isPresent()){
-                return ticketsServiceForConcert;
+
+        Optional<ServiceInstance> serviceInstance = Optional.empty();
+        for(String ticketsService : services){
+            serviceInstance = discoveryClient.getInstances(ticketsService)
+                        .stream()
+                        .filter(instance -> concert.getCode().equals(instance.getMetadata().get("code")))
+                        .findFirst();
+            // There should be another way to not do this
+            if(serviceInstance.isPresent()){
+                return serviceInstance;
             }
         }
-        return ticketsServiceForConcert;
+        return serviceInstance;
+
     }
 
     private Concert decorateConcertWithTicketsInfo(Concert concert, ServiceInstance ticketsServiceForConcert) {
@@ -113,12 +108,10 @@ public class ConcertServiceImpl implements ConcertService {
 
         WebClient webClient = WebClient.builder().baseUrl("http://" + ticketsServiceForConcert.getServiceId()).build();
 
-        WebClient.RequestHeadersSpec<?> request = webClient.get().uri("/tickets");
-
-        Mono<Integer> availableTickets = request
-                .retrieve()
+        Mono<Integer> availableTickets = webClient.get().uri("/tickets").retrieve()
                 .bodyToMono(Integer.class);
 
+        // I shouldn't block in here
         String remainingTickets = availableTickets.block().toString();
         log.info("> Available Tickets for " + concert.getName() + ": " + remainingTickets);
 

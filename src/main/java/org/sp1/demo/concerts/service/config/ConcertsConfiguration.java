@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConfigurationProperties(prefix = "s1p")
-public class ConcertsConfiguration {
+    public class ConcertsConfiguration {
 
     private String decorate;
 
