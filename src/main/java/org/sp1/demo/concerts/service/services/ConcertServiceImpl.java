@@ -79,7 +79,7 @@ public class ConcertServiceImpl implements ConcertService {
         Mono<Concert> concertMono = concertRepository.findById(id).
                 switchIfEmpty(Mono.error(new Exception("No Concert found with Id: " + id)));
         return concertMono.doOnSuccess(concert -> findMatchingTicketsService(concert)
-                .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance));
+                .ifPresent(serviceInstance -> decorateConcertWithTicketsInfo(concert, serviceInstance)));
 
     }
 
